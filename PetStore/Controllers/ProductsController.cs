@@ -5,12 +5,13 @@ using PetStore.Services;
 
 namespace PetStore.Controllers
 {
-    public class ProductsController(ApplicationDbContext applicationDbContext) : Controller
+    public class ProductsController(ApplicationDbContext applicationDbContext, IWebHostEnvironment environment) : Controller
     {
         private readonly ApplicationDbContext dbContext = applicationDbContext;
+        //private readonly IWebHostEnvironment webHostEnvironment = environment;
         public IActionResult Index()
         {
-            var products = dbContext.Products.OrderByDescending(p => p.Id) .ToList();
+            var products = dbContext.Products.OrderByDescending(p => p.Id).ToList();
             return View(products);
         }
 
@@ -33,6 +34,45 @@ namespace PetStore.Controllers
                     return View(productDTO);
                 }
             }
+
+            //Save the image file
+            string newFileName = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+            newFileName += Path.GetExtension(productDTO.ImageFile!.FileName);
+
+            string imageFullPath = environment.WebRootPath + "/products/" + newFileName;
+
+            using (var stream = System.IO.File.Create(imageFullPath))
+            {
+                productDTO.ImageFile.CopyTo(stream);
+            }
+
+            //Save the new product in the datebase
+            //_ = new
+            //    Product()
+            //{
+            //    Name = productDTO.Name,
+            //    Brand = productDTO.Brand,
+            //    Category = productDTO.Category,
+            //    Price = productDTO.Price,
+            //    Description = productDTO.Description,
+            //    ImageFileName = newFileName,
+            //    CreatedAt = DateTime.Now
+            //};
+
+            Product product = new()
+            {
+                Name = productDTO.Name,
+                Brand = productDTO.Brand,
+                Category = productDTO.Category,
+                Price = productDTO.Price,
+                Description = productDTO.Description,
+                ImageFileName = newFileName,
+                CreatedAt = DateTime.Now
+            };
+
+            dbContext.Products.Add(product);
+            dbContext.SaveChanges();
+
             return RedirectToAction("Index", "Products");
         }
     }
