@@ -150,6 +150,26 @@ namespace PetStore.Controllers
 
             dbContext.SaveChanges();
             return RedirectToAction("Index", "Products");
-        }        
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var product = dbContext.Products.Find(id);
+
+            if (product == null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+            else
+            {
+                string imageFullPath = environment.WebRootPath + "/products/" + product.ImageFileName;
+                System.IO.File.Delete(imageFullPath);
+
+                dbContext.Products.Remove(product);
+                dbContext.SaveChanges(true);
+
+                return RedirectToAction("Index", "Products");
+            }
+        }
     }
 }
