@@ -41,7 +41,7 @@
                     <a class="btn btn-primary" btn-sm asp-controller="Products" asp-action="Edit"
                     asp-route-id="@product.Id">Editar</a>
                     <a class="btn btn-danger" btn-sm asp-controller="Products" asp-action="Delete"
-                    asp-route-id="@product.Id">Eliminar</a>
+                    asp-route-id="@product.Id" onclick="return confirm('Estas seguro que quieres eliminar este producto?')">Eliminar</a>
                 </td>
             </tr>
         }
