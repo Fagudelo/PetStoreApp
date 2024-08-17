@@ -100,5 +100,56 @@ namespace PetStore.Controllers
 
             return View(productDTO);
         }
+
+        [HttpPost]
+        public IActionResult Edit(int id, ProductDTO productDTO)
+        {
+            var product = dbContext.Products.Find(id);
+
+            if (product == null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+            else
+            {
+                if (!ModelState.IsValid)
+                {
+                    ViewData["ProductId"] = product.Id;
+                    ViewData["ImageFileName"] = product.ImageFileName;
+                    ViewData["CreatedAt"] = product.CreatedAt.ToString("dd/MM/yyyy");
+
+                    return View(productDTO);
+                }
+            }
+
+            // Update the image file if we have a new image file
+            string newFileName = product.ImageFileName;
+            if (productDTO.ImageFile != null)
+            {
+                newFileName = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+                newFileName += Path.GetExtension(productDTO.ImageFile.FileName);
+                
+                string imageFullPath = environment.WebRootPath + "/products/" + newFileName;
+                using (var stream = System.IO.File.Create(imageFullPath))
+                {
+                    productDTO.ImageFile.CopyTo(stream);
+                }
+
+                //Delete the old image
+                string oldImageFullPath = environment.WebRootPath + "/products/" + product.ImageFileName;
+                System.IO.File.Delete(oldImageFullPath);
+            }
+
+            // Update the product in the database
+            product.Name = productDTO.Name;
+            product.Brand = productDTO.Brand;
+            product.Category = productDTO.Category;
+            product.Price = productDTO.Price;
+            product.Description = productDTO.Description;
+            product.ImageFileName = newFileName;
+
+            dbContext.SaveChanges();
+            return RedirectToAction("Index", "Products");
+        }        
     }
 }
