@@ -75,5 +75,30 @@ namespace PetStore.Controllers
 
             return RedirectToAction("Index", "Products");
         }
+
+        public IActionResult Edit(int id)
+        {
+            var product = dbContext.Products.Find(id);
+
+            if (product == null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+
+            var productDTO = new ProductDTO()
+            {
+                Name = product.Name,
+                Brand = product.Brand,
+                Category = product.Category,
+                Price = product.Price,
+                Description = product.Description
+            };
+
+            ViewData["ProductId"] = product.Id;
+            ViewData["ImageFileName"] = product.ImageFileName;
+            ViewData["CreatedAt"] = product.CreatedAt.ToString("dd/MM/yyyy");
+
+            return View(productDTO);
+        }
     }
 }
